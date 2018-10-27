@@ -1,10 +1,14 @@
-#A deep neural network based fully automatic traffic light detection system #
+# A deep neural network based fully automatic traffic light detection system #
 #### Machine Learning Engineer Nanodegree - Capstone Project ####
 Alberto Vigata  
 
 [demonstration video](http://www.youtube.com/watch?v=H-SrcDeF63c)
+
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/H-SrcDeF63c/0.jpg)](http://www.youtube.com/watch?v=H-SrcDeF63c)
 
+
+## 0. Setup
+This project needs separate big files that are not included by default in the repository. Run `setup.sh` to download models and validation images and videos.
 
 ## I. Definition
 
@@ -177,7 +181,7 @@ We achieved the portrayed goals with this particular implementation of our syste
 
 ## V. Conclusion
 
-### Getting it all together
+### Putting it all together
 
 Here's a video with the system correctly identyfing signals and signal status. Notice how system correctly tags signals when in view and also correctly tags their status.
 
