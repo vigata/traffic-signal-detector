@@ -8,7 +8,14 @@ Alberto Vigata
 
 
 ## 0. Setup
-This project needs separate big files that are not included by default in the repository. Run `setup.sh` to download models and validation images and videos.
+Requirements
+* This project needs separate big files that are not included by default in the repository. Run `setup.sh` to download models and validation images and videos.
+* Python 3 is required with the following libraries
+    * numpy
+    * keras
+    * tensorflow
+    * opencv
+    * moviepy
 
 ## I. Definition
 
