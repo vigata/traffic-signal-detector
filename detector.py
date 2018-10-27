@@ -161,32 +161,11 @@ class Detector(object):
 
 
 if __name__ == '__main__':
-    if False:
-        # test localizatoin
-        cl = TLClassifier()
-        #img = np.asarray( Image.open('images/3.jpg'), dtype="uint8" )
-        img = cv2.imread('images/1.jpg')
-        box = cl.localize_lights( img )
-        if(box is None):
-            print("Couldn't locate lights")
-        else:
-            cv2.imwrite("images/out.jpg", cl.draw_box( img, box))
-
-
-    if False:
-        #preprocess training images. produce 32x32 images that don't contain background
-        for i in range(3):
-            paths = glob(os.path.join('classifier_images/labeled_original/{}'.format(i), '*.png'))
-            for path in paths:
-                print(path)
-                i:memoryviewmg = cv2.imread(path)
-                crop = img[3:29, 11:22]
-                dst = cv2.resize( crop, (32, 32) )
-                cv2.imwrite("prep/"+path, dst)
-
     detector = Detector()
 
-    if False:
+    # enable for image detection
+    # parses all images under images/
+    if True:
         paths = glob(os.path.join('images/', '*.jpg'))
         for path in paths:
             img = cv2.imread(path)
@@ -200,7 +179,8 @@ if __name__ == '__main__':
             if len(detections):
                 cv2.imwrite("out/"+path, img)
 
-
+    #enable for video detection.
+    # parses the videos speciried in vfiles
     if True:
 
         vfiles = ['castro3.mp4', 'castro4.mp4' ]

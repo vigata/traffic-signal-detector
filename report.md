@@ -8,7 +8,14 @@ Alberto Vigata
 
 
 ## 0. Setup
-This project needs separate big files that are not included by default in the repository. Run `setup.sh` to download models and validation images and videos.
+Requirements
+* This project needs separate big files that are not included by default in the repository. Run `setup.sh` to download models and validation images and videos.
+* Python 3 is required with the following libraries
+    * numpy
+    * keras
+    * tensorflow
+    * opencv
+    * moviepy
 
 ## I. Definition
 
@@ -42,7 +49,7 @@ We will use the following two metrics to measure the performance of our system:
 ### Data Exploration
 
 #### Segmentation stage ####
-We will use the COCO dataset, publicly available at http://cocodataset.org. COCO dataset is a large dataset that has a lot of the features we need, in particular object segmentation. It's also a large dataset of 330K images with over 1.5 million objects represented. 
+We will use the COCO dataset, publicly available at [http://cocodataset.org](http://cocodataset.org). COCO dataset is a large dataset that has a lot of the features we need, in particular object segmentation. It's also a large dataset of 330K images with over 1.5 million objects represented. 
 
 One the categories that the dataset classifies for is "traffic light" which will be of interest in this project. Here's one example of an image in the dataset:
 
@@ -60,29 +67,28 @@ The full dataset for classification is under the 'training/prep' folder in this 
 We will use the traffic light images for classification with a CNN and we expect our model to learn all the different intricacies like:
 - yellow tone. different areas provide different hues for yellow light
 - angle in the image from the camera point of view. Model should be robust to identifying the light even if we see it slightly at an angle.
-- obstructing ojbects. Like in the example above, model should be robust to id the state even if there are object that partially obfuscate the view.
+- obstructing objects. Like in the example above, model should be robust to id the state even if there are object that partially obfuscate the view.
 
 #### Final validation state
  
 ### Exploratory Visualization
 
-MSCOCO dataset (2017) is a huge dataset with 123,287 images which contain 886,284 instances if different object classified
+1. MSCOCO dataset (2017) is a huge dataset with 123,287 images which contain 886,284 instances of different objects classified per type. 
 
-Our smaller traffic light state classification dataset of 32x32 pictures contains:
+2. Our smaller traffic light state classification dataset of 32x32 pictures. The dataset set resides under `training/prep` and the signals are labeled for green, yellow and red ( a different folder for each) The total feature count for every item is
 
 | green | yellow | red |
 |-------|--------|-----|
 |  431 | 159 | 187 |
 
-**TODO** visualization of all dataset 
-
-
+3. The third visual dataset is the dataset for validation. It consists of images and videos with or without traffic lights. The goal for the system is to correctly identify the location of lights and status. The reside under `videos` and `images` folder. Here's 4 randomly picked samples from the validation dataset:
+![alt text](report/validation_dataset.png "Creation of 32x32 classification images")
 ### Algorithms and Techniques
 
 We will make heavy use of CNN (Convolutional Neural Networks) for both steps. In particular:
 
 #### Segmentation and inference stage ####
-We need an inference model to figure out the regions of the image where the traffic signals exist. We have established we will used the COCO dataset for training. We could try to come up with our own model, but this is a problem that has been extensively researched. Here are a few of the most succesful techniques employed for inference of objects compared in speed and their gross performance on the COCO dataset:
+We need an inference model to figure out the regions of the image where the traffic signals exist. We have established we will used the COCO dataset for training. We could try to come up with our own model, but this is a problem that has been extensively researched. Here are a few of the most successful techniques employed for inference of objects compared in speed and their gross performance on the COCO dataset:
 
 |  inference type |  speed |  COCO performance | technique description |
 |-----------------|--------|-----------------|-----------------------|
@@ -90,7 +96,7 @@ We need an inference model to figure out the regions of the image where the traf
 |Region based Fully convolutional networks | medium | good | [link](https://arxiv.org/abs/1605.06409) |
 |Region proposal CNNs| slow | best | [link](https://medium.com/@smallfishbigsea/faster-r-cnn-explained-864d4fb7e3f8) |  
 
-Tensorflow provides multiple trained models on the COCO dataset of the above techniques and are available for download. We'll use them as is in our system and we'll experiment with the different speed and performance characteristics. 
+Tensorflow provides multiple pretrained models on the COCO dataset of the above techniques and are available for download. We'll use them as is in our system and we'll experiment with the different speed and performance characteristics. 
 
 | Model name  | Speed | COCO mAP | Outputs |
 | ------------ | :--------------: | :--------------: | :-------------: |
@@ -105,11 +111,12 @@ Tensorflow provides multiple trained models on the COCO dataset of the above tec
 #### Classification stage ####
 For the classification state we will use a simple LeNET style CNN to which we will feed the resized output (32x32) of the boxes from the inference stage. Our network has the following topology:
 ![alt text](report/model.png "Lenet CNN style model") 
+
 After training we end with a keras compiled model we can use on our main detector.
 
 ### Benchmark
 For benchmarking the system we will use the metrics stated above.
-Of particular interest will be the accuracy and validation loss in our testing set on the classification stage, and the lack of failures of the system when identyfing status of the light.
+Of particular interest will be the accuracy and validation loss in our testing set on the classification stage, and the lack of failures of the system when identifying status of the light.
 
 
 
@@ -122,9 +129,6 @@ We will use pretrained models on the inference stage, therefore we can feed imag
 #### Classification stage ####
 For our classification stage, it's important to preserve the color of the light, thus RGB images will be fed to the classification stage. Additionally to reduce training times and complexity we will downsample all of our features to 32x32 RGB images.
 
-**TODO** show 32x32 grid
-
-
 ### Implementation
 Let's take a look at the overview of our system implementation:
 
@@ -134,7 +138,7 @@ Let's take a look at the overview of our system implementation:
 We use a mixture of tensorflow and keras code to carry out the tasks in the project. The main core of the code lies in detector.py. This block of code is responsible to instantiate the inference model, resize output and feed the classification CNN.
 
 #### Inference model ####
-Our implementation under `detector.py` allows to use multiple pretrained models pointed out before. The fundamental reason to choose one model or the other is a tradeoff between running speed and mAP values. Our default model is using RCNNs, that seem to be very accurate providing infernece boxes.
+Our implementation under `detector.py` allows to use multiple pretrained models pointed out before. The fundamental reason to choose one model or the other is a trade-off between running speed and mAP values. Our default model is using RCNNs, that seem to be very accurate providing inferences boxes.
 
 #### Classification training ####
 There's a separate path in our code tree that performs training and validation on the classification CNN. Such code is under the `training` folder. Running it produces a `model.h5` keras model that will be imported by the `detector.py` code. 
@@ -183,11 +187,15 @@ We achieved the portrayed goals with this particular implementation of our syste
 
 ### Putting it all together
 
-Here's a video with the system correctly identyfing signals and signal status. Notice how system correctly tags signals when in view and also correctly tags their status.
+Here's a video with the system correctly identifying signals and signal status. Notice how system correctly tags signals when in view and also correctly tags their status.
 
 [demonstration video](http://www.youtube.com/watch?v=H-SrcDeF63c)
+
 [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/H-SrcDeF63c/0.jpg)](http://www.youtube.com/watch?v=H-SrcDeF63c)
 
+Our detection also works well in our validation image dataset. Here are a few examples:
+
+![alt text](report/validation_testing.png "MSCOCO showing traffic signals ")
 
 ### Reflections and random thoughts
 Although the system is working correctly in our siloed testing setup we can't establish performance of it with other imaging coming from other areas. Results and performance could be drastically different due to differences in traffic light shape and color. In particular the color of the yellow lighting seems to be a problem given than different markets have different hues. It is however an issue than can be mitigated due to the fact that the main data triggers are 'red' and 'green' and the transitional 'yellow' status is not so important.
@@ -196,8 +204,15 @@ The chosen RCNN runs at about 7 seconds/image on a comtemporary intel Core i5 CP
 
 
 ### Improvements ###
+#### speed ####
 The code could be run on GPU hardware to make it achieve 'real-time' status instead of the CPU based setup used here.
 
+#### inference application specific models ####
 Our use of out-of-the-box inference models maybe a limiting factor in terms of optimization for our problem. The models are trained in the COCO dataset and are classifying for object types we don't have interest for in this application. Therefore spending effort in training models exclusively focused on traffic signals could greatly diminish the complexity of the model and improve their speed.
 
+#### night dataset and operation ####
+All our imaging was done with daytime datasets and will only work during day time. Night time light detection comes with additional challenges specially when it comes to inference of the traffic light signals. 
+
+* Possible solutions could be improvements in camera imaging with higher exposures that would reveal the features of the traffic signals. 
+* completely different architecture for signal detection based exclusively on signal status within the picture
 
